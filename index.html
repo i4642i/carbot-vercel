@@ -3,132 +3,501 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>자동차 고장 진단 챗봇</title>
+  <title>NexTopologix - 자동차 고장 진단 챗봇</title>
+
   <style>
-    :root{ --appH:100vh; --kb:0px; --composer:72px; }
-    body{ margin:0; font-family:system-ui,"Noto Sans KR",sans-serif; background:#0b0f14; color:#e5e7eb; }
-    .app{ height: var(--appH); display:flex; flex-direction:column; }
-    .chat{ flex:1; overflow:auto; padding:14px; padding-bottom: calc(var(--composer) + 14px); }
-    .row{ display:flex; margin:10px 0; }
-    .row.user{ justify-content:flex-end; }
-    .row.bot{ justify-content:flex-start; }
-    .bubble{ max-width:86%; padding:12px 14px; border-radius:18px; line-height:1.35; font-size:20px; white-space:pre-wrap; background:#1f2937; }
-    .row.user .bubble{ background:#2563eb; border-bottom-right-radius:6px; }
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --line:#e6e8f0;
+      --text:#111827;
+      --muted:#6b7280;
+      --brand:#1f5eff;
+      --brand2:#22c55e;
+
+      --headerH:64px;
+      --dockH:220px; /* JS가 실제 높이로 갱신 */
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden; /* 전체 스크롤 제거(메시지 영역만 스크롤) */
+    }
+
+    /* 상단 헤더 */
+    .header{
+      position:fixed;
+      top:0; left:0; right:0;
+      height:var(--headerH);
+      background:rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+      z-index:50;
+      display:flex;
+      align-items:center;
+      padding:10px 14px;
+      gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width:0;
+    }
+    .brand img{
+      height:34px; width:auto;
+      display:block;
+    }
+    .brandText{
+      display:flex; flex-direction:column;
+      line-height:1.15;
+      min-width:0;
+    }
+    .brandText .title{
+      font-weight:800;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brandText .sub{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* 메시지 영역 */
+    .chat{
+      position:fixed;
+      top:var(--headerH);
+      left:0; right:0;
+      bottom:0;
+      padding:14px;
+      padding-bottom: calc(var(--dockH) + 14px); /* 하단 독 높이만큼 확보 */
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      z-index:10;
+    }
+
+    .bubble{
+      max-width: 86%;
+      padding:14px 14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--card);
+      box-shadow: 0 1px 0 rgba(17,24,39,.02);
+      margin:10px 0;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .bubble.user{
+      margin-left:auto;
+      background:var(--brand);
+      border-color:transparent;
+      color:white;
+    }
+
+    /* 하단 독(제품+링크+입력) */
+    .dock{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      z-index:80;
+      background:rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
+      border-top:1px solid var(--line);
+      padding-bottom: env(safe-area-inset-bottom);
+      transform: translateY(0);
+      will-change: transform;
+    }
+    .dockInner{
+      padding:10px 12px 12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    /* 제품 카드 가로 스크롤 */
+    .products{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom:2px;
+    }
+    .pCard{
+      flex:0 0 220px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--card);
+      padding:12px;
+      text-decoration:none;
+      color:var(--text);
+      box-shadow: 0 1px 0 rgba(17,24,39,.02);
+    }
+
+    /* 제품 이미지 (동일 크기) */
+    .pImg{
+      width:100%;
+      height:120px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#f1f3f9;
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .pImg img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .pTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .pTitle{
+      font-weight:900;
+      font-size:14px;
+    }
+    .badge{
+      font-size:12px;
+      font-weight:900;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(31,94,255,.25);
+      background: rgba(31,94,255,.08);
+      color: var(--brand);
+      white-space:nowrap;
+    }
+    .pDesc{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      margin:0 0 10px 0;
+    }
+    .pCta{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:12px;
+      background:var(--brand);
+      color:white;
+      font-weight:900;
+      padding:10px 10px;
+      min-height:42px;
+    }
+
+    /* 빠른 링크 */
+    .quickRow{
+      display:flex;
+      gap:10px;
+    }
+    .qbtn{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:12px 10px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--card);
+      font-weight:800;
+      text-decoration:none;
+      color:var(--text);
+      min-height:44px;
+    }
+    .qbtn.green{
+      border-color: rgba(34,197,94,.35);
+      background: rgba(34,197,94,.10);
+    }
+    .qbtn.blue{
+      border-color: rgba(31,94,255,.35);
+      background: rgba(31,94,255,.10);
+    }
+    .qbtn.gray{
+      border-color: rgba(107,114,128,.25);
+      background: rgba(107,114,128,.08);
+    }
+
+    /* 입력창 */
     .composer{
-      position:fixed; left:0; right:0;
-      bottom: var(--kb);
-      background: rgba(17,24,39,.92);
-      border-top:1px solid rgba(255,255,255,.08);
-      padding:10px;
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
     }
-    .inner{ display:flex; gap:8px; max-width:980px; margin:0 auto; align-items:flex-end; }
-    textarea{ flex:1; min-height:46px; max-height:140px; padding:10px 12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.25); color:#e5e7eb;
-      font-size:16px; line-height:1.3; resize:none; outline:none;
+    textarea{
+      flex:1;
+      resize:none;
+      border-radius:16px;
+      border:1px solid var(--line);
+      padding:12px 12px;
+      font-size:16px;
+      line-height:1.35;
+      min-height:46px;
+      max-height:140px;
+      outline:none;
+      background:var(--card);
     }
-    button{ height:46px; padding:0 14px; border-radius:14px; border:0; background:#22c55e; font-weight:800; font-size:16px; }
+    textarea:focus{
+      border-color: rgba(31,94,255,.45);
+      box-shadow: 0 0 0 3px rgba(31,94,255,.12);
+    }
+    .send{
+      flex:0 0 auto;
+      min-width:72px;
+      min-height:46px;
+      border:none;
+      border-radius:16px;
+      background:var(--brand2);
+      color:white;
+      font-weight:900;
+      font-size:16px;
+      padding:0 16px;
+    }
+    .send:disabled{ opacity:.6; }
+
+    /* 데스크탑 폭 제한 */
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+    }
+    .header .wrap, .chat .wrap, .dock .wrap{ width:100%; }
   </style>
 </head>
-<body>
-<div class="app">
-  <div id="chat" class="chat"></div>
 
-  <div class="composer">
-    <div class="inner">
-      <textarea id="input" rows="1" placeholder="예) 시동이 안 걸려요"></textarea>
-      <button id="send">전송</button>
+<body>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="wrap">
+      <div class="brand">
+        <img src="https://i.postimg.cc/PqK05G9P/fulllogo-transparent-nobuffer.png" alt="NexTopologix" />
+        <div class="brandText">
+          <div class="title">NexTopologix</div>
+          <div class="sub">자동차 고장 진단 챗봇</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  // ✅ 1) 여기에 본인 GAS 웹앱 URL 넣기 (끝이 /exec 로 끝나는 것)
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzXwWwTZ5sGMjHtZGdTPk26DLa00qh378ldnW9MDO1hWCEkvXQUA_kEn4t9lCweN3en/exec";
-  
+  <!-- CHAT -->
+  <div id="chat" class="chat">
+    <div class="wrap" id="chatWrap">
+      <div class="bubble">안녕하세요. 증상을 한 문장으로 적어주세요.</div>
+    </div>
+  </div>
 
-  const chat = document.getElementById("chat");
-  const input = document.getElementById("input");
-  const sendBtn = document.getElementById("send");
+  <!-- DOCK -->
+  <div id="dock" class="dock">
+    <div class="wrap">
+      <div class="dockInner">
 
-  const SESSION_KEY = "carbot_sessionId";
-  const getSessionId = () => {
-    let s = localStorage.getItem(SESSION_KEY);
-    if (!s) { s = crypto.randomUUID(); localStorage.setItem(SESSION_KEY, s); }
-    return s;
-  };
+        <!-- 제품 -->
+        <div class="products" id="products">
+          <a class="pCard" href="https://smartstore.naver.com/nextopologix/products/12688276081" target="_blank" rel="noopener">
+            <div class="pImg"><img src="https://i.postimg.cc/ZYcQ4hkP/product_1.jpg" alt="제품 1"></div>
+            <div class="pTop">
+              <div class="pTitle">제품 1</div>
+              <div class="badge">58,000원</div>
+            </div>
+            <p class="pDesc">BMW 차량정비 자키패드·어댑터 / 경정비 필수 아이템</p>
+            <div class="pCta">스마트스토어 보기</div>
+          </a>
 
-  function add(role, text){
-    const row = document.createElement("div");
-    row.className = "row " + role;
-    const b = document.createElement("div");
-    b.className = "bubble";
-    b.textContent = text || "";
-    row.appendChild(b);
-    chat.appendChild(row);
-    requestAnimationFrame(()=> chat.scrollTop = chat.scrollHeight);
-  }
+          <a class="pCard" href="https://smartstore.naver.com/nextopologix/products/12577388614" target="_blank" rel="noopener">
+            <div class="pImg"><img src="https://i.postimg.cc/NG4nBwh6/product_2.jpg" alt="제품 2"></div>
+            <div class="pTop">
+              <div class="pTitle">제품 2</div>
+              <div class="badge">158,000원</div>
+            </div>
+            <p class="pDesc">BMW F바디 플랫폼 차체 강성보강 브레이스-경량설계(51717425606 호환)</p>
+            <div class="pCta">스마트스토어 보기</div>
+          </a>
 
-  function autosize(){
-    input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 140) + "px";
-  }
+          <a class="pCard" href="https://smartstore.naver.com/nextopologix/products/12529390992" target="_blank" rel="noopener">
+            <div class="pImg"><img src="https://i.postimg.cc/gcD7mP98/product_3.jpg" alt="제품 3"></div>
+            <div class="pTop">
+              <div class="pTitle">제품 3</div>
+              <div class="badge">120,000원</div>
+            </div>
+            <p class="pDesc">BMW F바디 차체 강성보강 브레이스(51717425606 호환)</p>
+            <div class="pCta">스마트스토어 보기</div>
+          </a>
+        </div>
 
-  async function callApi(message){
-    const payload = { message, sessionId: getSessionId() };
+        <!-- 블로그/오픈톡/이메일 -->
+        <div class="quickRow">
+          <a id="btnOpenTalk" class="qbtn green" href="https://open.kakao.com/o/sePxTsci" target="_blank" rel="noopener">💬 오픈톡 상담</a>
+          <a class="qbtn blue" href="https://blog.naver.com/nextopologix" target="_blank" rel="noopener">📝 블로그</a>
+          <a class="qbtn gray" href="mailto:ksh4642@nextopologix.com">✉️ 이메일</a>
+        </div>
 
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
+        <!-- 입력 -->
+        <div class="composer">
+          <textarea id="input" rows="1" placeholder="예) 시동이 안 걸려요"></textarea>
+          <button id="send" class="send">전송</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***************
+     * 설정
+     ***************/
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzXwWwTZ5sGMjHtZGdTPk26DLa00qh378ldnW9MDO1hWCEkvXQUA_kEn4t9lCweN3en/exec";
+
+    const SESSION_KEY = "carbot_sessionId";
+    const getSessionId = () => {
+      let s = localStorage.getItem(SESSION_KEY);
+      if (!s) { s = crypto.randomUUID(); localStorage.setItem(SESSION_KEY, s); }
+      return s;
+    };
+
+    const chat = document.getElementById("chat");
+    const chatWrap = document.getElementById("chatWrap");
+    const dock = document.getElementById("dock");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+
+    /***************
+     * 레이아웃: 하단 독 높이만큼 확보 + 키보드 대응(visualViewport)
+     ***************/
+    function updateDockHeightVar(){
+      const h = dock.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--dockH", `${Math.ceil(h)}px`);
+    }
+
+    function applyVisualViewport(){
+      if (!window.visualViewport) return;
+      const vv = window.visualViewport;
+      const keyboardInset = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+      dock.style.transform = `translateY(${-keyboardInset}px)`;
+      updateDockHeightVar();
+    }
+
+    window.addEventListener("resize", () => {
+      updateDockHeightVar();
+      applyVisualViewport();
     });
 
-    return await res.json();
-  }
-
-  async function send(){
-    const msg = input.value.trim();
-    if(!msg) return;
-    add("user", msg);
-    input.value=""; autosize();
-    sendBtn.disabled = true;
-
-    try{
-      const data = await callApi(msg);
-      if (data?.sessionId) localStorage.setItem(SESSION_KEY, data.sessionId);
-      add("bot", data?.reply || "응답이 없습니다.");
-      if (data?.nextQuestion) add("bot", "Q) " + data.nextQuestion);
-    }catch(e){
-      add("bot", "네트워크/CORS 오류가 발생했어요.");
-      console.error(e);
-    }finally{
-      sendBtn.disabled = false;
-      input.focus({preventScroll:true});
+    if (window.visualViewport){
+      window.visualViewport.addEventListener("resize", applyVisualViewport);
+      window.visualViewport.addEventListener("scroll", applyVisualViewport);
     }
-  }
 
-  // ✅ 키보드 대응(visualViewport)
-  function viewportFix(){
-    const vv = window.visualViewport;
-    const appH = vv ? Math.round(vv.height) : window.innerHeight;
-    document.documentElement.style.setProperty("--appH", appH + "px");
+    updateDockHeightVar();
+    applyVisualViewport();
 
-    let kb = 0;
-    if(vv){
-      const diff = Math.round(window.innerHeight - vv.height - vv.offsetTop);
-      kb = Math.max(0, diff);
+    /***************
+     * UX: textarea 자동 높이
+     ***************/
+    function autosize(){
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 140) + "px";
     }
-    document.documentElement.style.setProperty("--kb", kb + "px");
-  }
-  window.addEventListener("resize", viewportFix, {passive:true});
-  window.visualViewport?.addEventListener("resize", viewportFix, {passive:true});
-  window.visualViewport?.addEventListener("scroll", viewportFix, {passive:true});
+    input.addEventListener("input", autosize);
 
-  sendBtn.addEventListener("click", send);
-  input.addEventListener("input", autosize);
-  input.addEventListener("keydown", (e)=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); }});
+    /***************
+     * 채팅 렌더링
+     ***************/
+    function scrollToBottom(){
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-  add("bot","안녕하세요. 증상을 한 문장으로 적어주세요.");
-  viewportFix(); autosize();
-</script>
+    function addBubble(text, who="bot"){
+      const div = document.createElement("div");
+      div.className = "bubble" + (who==="user" ? " user" : "");
+      div.textContent = text || "";
+      chatWrap.appendChild(div);
+      scrollToBottom();
+    }
+
+    function renderBotAnswer(payload){
+      if (payload.reply) addBubble(payload.reply, "bot");
+      if (payload.nextQuestion) addBubble("Q) " + payload.nextQuestion, "bot");
+      if (payload?.sessionId) localStorage.setItem(SESSION_KEY, payload.sessionId);
+    }
+
+    /***************
+     * ✅ API 호출 (원본처럼 text/plain 사용 = CORS 프리플라이트 회피)
+     ***************/
+    async function callApi(message){
+      const payload = { message, sessionId: getSessionId() };
+
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // ✅ 핵심
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch(e) {}
+
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}: ${text.slice(0,200)}`);
+      if (!data) throw new Error(`응답이 JSON이 아닙니다: ${text.slice(0,200)}`);
+
+      return data;
+    }
+
+    let busy = false;
+    async function onSend(){
+      const msg = input.value.trim();
+      if (!msg || busy) return;
+
+      addBubble(msg, "user");
+      input.value = "";
+      autosize();
+
+      busy = true;
+      sendBtn.disabled = true;
+
+      try{
+        const data = await callApi(msg);
+        renderBotAnswer(data);
+      }catch(e){
+        addBubble(
+          "상담 서버 연결에 실패했습니다.\n" +
+          "오류: " + (e?.message || e),
+          "bot"
+        );
+        console.error(e);
+      }finally{
+        busy = false;
+        sendBtn.disabled = false;
+        input.focus({preventScroll:true});
+      }
+    }
+
+    sendBtn.addEventListener("click", onSend);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        onSend();
+      }
+    });
+
+    // 초기 보정
+    setTimeout(() => {
+      updateDockHeightVar();
+      applyVisualViewport();
+      scrollToBottom();
+    }, 50);
+  </script>
 </body>
 </html>
