@@ -26,7 +26,7 @@
       font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow:hidden; /* 전체 스크롤 제거(메시지 영역만 스크롤) */
+      overflow:hidden;
     }
 
     /* 상단 헤더 */
@@ -43,32 +43,16 @@
       padding:10px 14px;
       gap:12px;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      min-width:0;
-    }
-    .brand img{
-      height:34px; width:auto;
-      display:block;
-    }
-    .brandText{
-      display:flex; flex-direction:column;
-      line-height:1.15;
-      min-width:0;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .brand img{ height:34px; width:auto; display:block; }
+    .brandText{ display:flex; flex-direction:column; line-height:1.15; min-width:0; }
     .brandText .title{
-      font-weight:800;
-      font-size:15px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-weight:800; font-size:15px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
     .brandText .sub{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-size:12px; color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
 
     /* 메시지 영역 */
@@ -78,7 +62,7 @@
       left:0; right:0;
       bottom:0;
       padding:14px;
-      padding-bottom: calc(var(--dockH) + 14px); /* 하단 독 높이만큼 확보 */
+      padding-bottom: calc(var(--dockH) + 14px);
       overflow:auto;
       -webkit-overflow-scrolling: touch;
       z-index:10;
@@ -102,7 +86,7 @@
       color:white;
     }
 
-    /* 하단 독(제품+링크+입력) */
+    /* 하단 독 */
     .dock{
       position:fixed;
       left:0; right:0;
@@ -122,7 +106,13 @@
       gap:10px;
     }
 
-    /* 제품 카드 가로 스크롤 */
+    /* ✅ focus(커서 생김)일 때만 광고/링크 숨김 */
+    .dock.compact .products,
+    .dock.compact .quickRow{
+      display:none;
+    }
+
+    /* 광고(제품 카드) - 작은 버전 */
     .products{
       display:flex;
       gap:10px;
@@ -131,50 +121,39 @@
       padding-bottom:2px;
     }
     .pCard{
-      flex:0 0 220px;
+      flex:0 0 185px;
       border:1px solid var(--line);
-      border-radius:16px;
+      border-radius:14px;
       background:var(--card);
-      padding:12px;
+      padding:10px;
       text-decoration:none;
       color:var(--text);
       box-shadow: 0 1px 0 rgba(17,24,39,.02);
     }
-
-    /* 제품 이미지 (동일 크기) */
     .pImg{
       width:100%;
-      height:120px;
-      border-radius:12px;
+      height:88px;
+      border-radius:10px;
       overflow:hidden;
       background:#f1f3f9;
-      margin-bottom:10px;
+      margin-bottom:8px;
       display:flex;
       align-items:center;
       justify-content:center;
     }
-    .pImg img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
+    .pImg img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .pTop{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
+      gap:8px;
+      margin-bottom:6px;
     }
-    .pTitle{
-      font-weight:900;
-      font-size:14px;
-    }
+    .pTitle{ font-weight:900; font-size:13px; }
     .badge{
-      font-size:12px;
-      font-weight:900;
-      padding:4px 8px;
+      font-size:11px; font-weight:900;
+      padding:3px 7px;
       border-radius:999px;
       border:1px solid rgba(31,94,255,.25);
       background: rgba(31,94,255,.08);
@@ -182,10 +161,10 @@
       white-space:nowrap;
     }
     .pDesc{
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
       line-height:1.35;
-      margin:0 0 10px 0;
+      margin:0 0 8px 0;
     }
     .pCta{
       display:flex;
@@ -195,15 +174,13 @@
       background:var(--brand);
       color:white;
       font-weight:900;
-      padding:10px 10px;
-      min-height:42px;
+      padding:9px 10px;
+      min-height:38px;
+      font-size:14px;
     }
 
     /* 빠른 링크 */
-    .quickRow{
-      display:flex;
-      gap:10px;
-    }
+    .quickRow{ display:flex; gap:10px; }
     .qbtn{
       flex:1;
       display:flex;
@@ -219,25 +196,12 @@
       color:var(--text);
       min-height:44px;
     }
-    .qbtn.green{
-      border-color: rgba(34,197,94,.35);
-      background: rgba(34,197,94,.10);
-    }
-    .qbtn.blue{
-      border-color: rgba(31,94,255,.35);
-      background: rgba(31,94,255,.10);
-    }
-    .qbtn.gray{
-      border-color: rgba(107,114,128,.25);
-      background: rgba(107,114,128,.08);
-    }
+    .qbtn.green{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); }
+    .qbtn.blue{ border-color: rgba(31,94,255,.35); background: rgba(31,94,255,.10); }
+    .qbtn.gray{ border-color: rgba(107,114,128,.25); background: rgba(107,114,128,.08); }
 
-    /* 입력창 */
-    .composer{
-      display:flex;
-      gap:10px;
-      align-items:flex-end;
-    }
+    /* 입력 */
+    .composer{ display:flex; gap:10px; align-items:flex-end; }
     textarea{
       flex:1;
       resize:none;
@@ -269,11 +233,8 @@
     }
     .send:disabled{ opacity:.6; }
 
-    /* 데스크탑 폭 제한 */
-    .wrap{
-      max-width:900px;
-      margin:0 auto;
-    }
+    /* 폭 제한 */
+    .wrap{ max-width:900px; margin:0 auto; }
     .header .wrap, .chat .wrap, .dock .wrap{ width:100%; }
   </style>
 </head>
@@ -313,7 +274,6 @@
               <div class="badge">58,000원</div>
             </div>
             <p class="pDesc">BMW 차량정비 자키패드·어댑터 / 경정비 필수 아이템</p>
-            <div class="pCta">스마트스토어 보기</div>
           </a>
 
           <a class="pCard" href="https://smartstore.naver.com/nextopologix/products/12577388614" target="_blank" rel="noopener">
@@ -323,7 +283,6 @@
               <div class="badge">158,000원</div>
             </div>
             <p class="pDesc">BMW F바디 플랫폼 차체 강성보강 브레이스-경량설계(51717425606 호환)</p>
-            <div class="pCta">스마트스토어 보기</div>
           </a>
 
           <a class="pCard" href="https://smartstore.naver.com/nextopologix/products/12529390992" target="_blank" rel="noopener">
@@ -333,13 +292,12 @@
               <div class="badge">120,000원</div>
             </div>
             <p class="pDesc">BMW F바디 차체 강성보강 브레이스(51717425606 호환)</p>
-            <div class="pCta">스마트스토어 보기</div>
           </a>
         </div>
 
         <!-- 블로그/오픈톡/이메일 -->
         <div class="quickRow">
-          <a id="btnOpenTalk" class="qbtn green" href="https://open.kakao.com/o/sePxTsci" target="_blank" rel="noopener">💬 오픈톡 상담</a>
+          <a class="qbtn green" href="https://open.kakao.com/o/sePxTsci" target="_blank" rel="noopener">💬 오픈톡 상담</a>
           <a class="qbtn blue" href="https://blog.naver.com/nextopologix" target="_blank" rel="noopener">📝 블로그</a>
           <a class="qbtn gray" href="mailto:ksh4642@nextopologix.com">✉️ 이메일</a>
         </div>
@@ -355,9 +313,6 @@
   </div>
 
   <script>
-    /***************
-     * 설정
-     ***************/
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzXwWwTZ5sGMjHtZGdTPk26DLa00qh378ldnW9MDO1hWCEkvXQUA_kEn4t9lCweN3en/exec";
 
     const SESSION_KEY = "carbot_sessionId";
@@ -373,19 +328,28 @@
     const input = document.getElementById("input");
     const sendBtn = document.getElementById("send");
 
-    /***************
-     * 레이아웃: 하단 독 높이만큼 확보 + 키보드 대응(visualViewport)
-     ***************/
+    let isInputFocused = false;
+
     function updateDockHeightVar(){
       const h = dock.getBoundingClientRect().height;
       document.documentElement.style.setProperty("--dockH", `${Math.ceil(h)}px`);
     }
 
     function applyVisualViewport(){
-      if (!window.visualViewport) return;
+      if (!window.visualViewport) {
+        updateDockHeightVar();
+        return;
+      }
+
       const vv = window.visualViewport;
       const keyboardInset = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+
+      // ✅ dock는 키보드 위로 올라가게 유지 (입력 가림 방지)
       dock.style.transform = `translateY(${-keyboardInset}px)`;
+
+      // ✅ 광고 숨김은 "커서 생김(포커스)"일 때만
+      dock.classList.toggle("compact", isInputFocused);
+
       updateDockHeightVar();
     }
 
@@ -399,21 +363,25 @@
       window.visualViewport.addEventListener("scroll", applyVisualViewport);
     }
 
-    updateDockHeightVar();
-    applyVisualViewport();
-
-    /***************
-     * UX: textarea 자동 높이
-     ***************/
     function autosize(){
       input.style.height = "auto";
       input.style.height = Math.min(input.scrollHeight, 140) + "px";
+      updateDockHeightVar();
     }
-    input.addEventListener("input", autosize);
 
-    /***************
-     * 채팅 렌더링
-     ***************/
+    input.addEventListener("input", autosize);
+    input.addEventListener("focus", () => {
+      isInputFocused = true;
+      applyVisualViewport();
+      // 포커스 순간에 채팅 마지막이 가려질 수 있으니 보정
+      setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 0);
+    });
+    input.addEventListener("blur", () => {
+      isInputFocused = false;
+      applyVisualViewport();
+      setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 0);
+    });
+
     function scrollToBottom(){
       chat.scrollTop = chat.scrollHeight;
     }
@@ -432,15 +400,12 @@
       if (payload?.sessionId) localStorage.setItem(SESSION_KEY, payload.sessionId);
     }
 
-    /***************
-     * ✅ API 호출 (원본처럼 text/plain 사용 = CORS 프리플라이트 회피)
-     ***************/
     async function callApi(message){
       const payload = { message, sessionId: getSessionId() };
 
       const res = await fetch(GAS_URL, {
         method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, // ✅ 핵심
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
         cache: "no-store",
       });
@@ -471,16 +436,13 @@
         const data = await callApi(msg);
         renderBotAnswer(data);
       }catch(e){
-        addBubble(
-          "상담 서버 연결에 실패했습니다.\n" +
-          "오류: " + (e?.message || e),
-          "bot"
-        );
+        addBubble("상담 서버 연결에 실패했습니다.\n오류: " + (e?.message || e), "bot");
         console.error(e);
       }finally{
         busy = false;
         sendBtn.disabled = false;
         input.focus({preventScroll:true});
+        applyVisualViewport();
       }
     }
 
@@ -497,6 +459,7 @@
       updateDockHeightVar();
       applyVisualViewport();
       scrollToBottom();
+      autosize();
     }, 50);
   </script>
 </body>
